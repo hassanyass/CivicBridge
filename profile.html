@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Civic Bridge</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="logo">Civic Bridge</h1>
+                <p class="tagline">One chat for all your government needs</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container">
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="profile.html" class="nav-link active">Profile</a></li>
+                <li><a href="chat.html" class="nav-link">Chat</a></li>
+                <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <h2 class="page-title">My Profile</h2>
+            <div class="profile-content">
+                <div class="profile-card">
+                    <h3>Personal Information</h3>
+                    <div class="profile-info">
+                        <div class="info-item">
+                            <label>Name:</label>
+                            <span id="profile-name">John Doe</span>
+                        </div>
+                        <div class="info-item">
+                            <label>ID Number:</label>
+                            <span id="profile-id">ID123456789</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Date of Birth:</label>
+                            <span id="profile-dob">January 15, 1985</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Email:</label>
+                            <span id="profile-email">john.doe@email.com</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Address:</label>
+                            <span id="profile-address">123 Main St, City, State 12345</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Phone:</label>
+                            <span id="profile-phone">+1 (555) 123-4567</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="editProfile()">Edit Profile</button>
+                </div>
+
+                <div class="documents-card">
+                    <h3>Saved Documents</h3>
+                    <div class="documents-list" id="documents-list">
+                        <!-- Documents will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
