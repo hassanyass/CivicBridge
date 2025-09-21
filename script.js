@@ -1,345 +1,738 @@
-// Global state management using localStorage
-class CivicApp {
-  constructor() {
-    this.initializeData()
-    this.bindEvents()
-    this.loadProfile()
-    this.loadDocuments()
-    this.loadDashboard()
+// CivicBridge - Malaysian Government Service Web App
+// Shared JavaScript functionality
+
+// Dummy data for the application
+const dummyData = {
+  users: [
+    {
+      id: 1,
+      name: "Ahmad Faiz Bin Abdullah",
+      email: "ahmad.faiz@email.com",
+      idNumber: "901215-10-1234",
+      phone: "+60 12-345-6789",
+      address: "123 Jalan Merdeka, Kuala Lumpur, Malaysia 50000",
+      role: "citizen"
+    },
+    {
+      id: 2,
+      name: "Nur Aisyah Binti Ismail",
+      email: "nur.aisyah@email.com",
+      idNumber: "880520-08-5678",
+      phone: "+60 13-456-7890",
+      address: "456 Jalan Tun Razak, Petaling Jaya, Malaysia 46000",
+      role: "citizen"
+    },
+    {
+      id: 3,
+      name: "Lim Wei Jian",
+      email: "lim.weijian@email.com",
+      idNumber: "920310-05-9012",
+      phone: "+60 14-567-8901",
+      address: "789 Jalan Ampang, Ampang, Malaysia 68000",
+      role: "citizen"
+    },
+    {
+      id: 4,
+      name: "Priya Devi",
+      email: "priya.devi@email.com",
+      idNumber: "870625-12-3456",
+      phone: "+60 15-678-9012",
+      address: "321 Jalan Bukit Bintang, Kuala Lumpur, Malaysia 50200",
+      role: "citizen"
+    },
+    {
+      id: 5,
+      name: "Farhan Hasnul",
+      email: "farhan.hasnul@email.com",
+      idNumber: "910815-03-7890",
+      phone: "+60 16-789-0123",
+      address: "654 Jalan Sultan Ismail, Kuala Lumpur, Malaysia 50250",
+      role: "citizen"
+    },
+    {
+      id: 6,
+      name: "Admin User",
+      email: "admin@civicbridge.gov.my",
+      idNumber: "800101-01-0001",
+      phone: "+60 17-000-0001",
+      address: "Government Building, Putrajaya, Malaysia 62000",
+      role: "admin"
+    }
+  ],
+  
+  documents: [
+    {
+      id: 1,
+      userId: 1,
+      name: "Driver's License",
+      type: "license",
+      number: "DL123456789",
+      status: "valid",
+      expiryDate: "2026-12-15",
+      issueDate: "2021-12-15"
+    },
+    {
+      id: 2,
+      userId: 1,
+      name: "Passport",
+      type: "passport",
+      number: "PP987654321",
+      status: "expiring",
+      expiryDate: "2025-11-20",
+      issueDate: "2020-11-20"
+    },
+    {
+      id: 3,
+      userId: 1,
+      name: "National ID",
+      type: "id",
+      number: "ID456789123",
+      status: "valid",
+      expiryDate: "2030-08-10",
+      issueDate: "2020-08-10"
+    },
+    {
+      id: 4,
+      userId: 1,
+      name: "Road Tax",
+      type: "roadtax",
+      number: "RT789123456",
+      status: "expiring",
+      expiryDate: "2025-10-15",
+      issueDate: "2024-10-15"
+    },
+    {
+      id: 5,
+      userId: 1,
+      name: "Vehicle Registration",
+      type: "vehicle",
+      number: "VR456789123",
+      status: "valid",
+      expiryDate: "2026-03-20",
+      issueDate: "2021-03-20"
+    },
+    {
+      id: 6,
+      userId: 1,
+      name: "Insurance Status",
+      type: "insurance",
+      number: "INS123456789",
+      status: "expired",
+      expiryDate: "2025-08-30",
+      issueDate: "2024-08-30"
+    }
+  ],
+  
+  requests: [
+    {
+      id: 1,
+      userId: 1,
+      type: "license_renewal",
+      title: "Driver's License Renewal",
+      description: "Request for driver's license renewal",
+      status: "pending",
+      submittedDate: "2025-09-18",
+      priority: "medium"
+    },
+    {
+      id: 2,
+      userId: 2,
+      type: "passport_renewal",
+      title: "Passport Renewal",
+      description: "Request for passport renewal",
+      status: "approved",
+      submittedDate: "2025-09-15",
+      approvedDate: "2025-09-17",
+      priority: "high"
+    },
+    {
+      id: 3,
+      userId: 3,
+      type: "id_replacement",
+      title: "National ID Replacement",
+      description: "Request for lost ID replacement",
+      status: "rejected",
+      submittedDate: "2025-09-10",
+      rejectedDate: "2025-09-12",
+      rejectionReason: "Incomplete documentation",
+      priority: "high"
+    }
+  ],
+  
+  notifications: [
+    {
+      id: 1,
+      userId: 1,
+      title: "License Renewal Approved",
+      message: "Your driver's license renewal has been approved. Please collect your new license from the nearest JPJ office.",
+      type: "success",
+      date: "2025-09-18",
+      read: false
+    },
+    {
+      id: 2,
+      userId: 1,
+      title: "Passport Expiring Soon",
+      message: "Your passport will expire on November 20, 2025. Please renew it soon to avoid any inconvenience.",
+      type: "warning",
+      date: "2025-09-15",
+      read: false
+    }
+  ]
+};
+
+// Current user session
+let currentUser = null;
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+  initializeApp();
+});
+
+function initializeApp() {
+  // Check if user is logged in
+  const savedUser = localStorage.getItem('civicBridgeUser');
+  if (savedUser) {
+    currentUser = JSON.parse(savedUser);
   }
-
-  initializeData() {
-    // Initialize default data if not exists
-    if (!localStorage.getItem("civicProfile")) {
-      const defaultProfile = {
-        name: "John Doe",
-        id: "ID123456789",
-        email: "john.doe@email.com",
-        address: "123 Main St, City, State 12345",
-        phone: "+1 (555) 123-4567",
-      }
-      localStorage.setItem("civicProfile", JSON.stringify(defaultProfile))
-    }
-
-    if (!localStorage.getItem("civicDocuments")) {
-      const defaultDocuments = [
-        { name: "Driving License", status: "valid", expiry: "2026-12-31", statusText: "Valid until 2026" },
-        { name: "Passport", status: "warning", expiry: "2024-06-15", statusText: "Expiring Soon" },
-        { name: "Vehicle Registration", status: "valid", expiry: "2025-08-20", statusText: "Valid until 2025" },
-        { name: "Business License", status: "expired", expiry: "2023-12-01", statusText: "Expired" },
-      ]
-      localStorage.setItem("civicDocuments", JSON.stringify(defaultDocuments))
-    }
-
-    if (!localStorage.getItem("civicRequests")) {
-      const defaultRequests = {
-        ongoing: [],
-        history: [
-          { title: "License Renewal", status: "Completed", date: "2024-01-15", receipt: "#123456" },
-          { title: "Vehicle Registration", status: "Completed", date: "2024-02-20", receipt: "#789012" },
-        ],
-      }
-      localStorage.setItem("civicRequests", JSON.stringify(defaultRequests))
-    }
-
-    if (!localStorage.getItem("civicChatHistory")) {
-      localStorage.setItem("civicChatHistory", JSON.stringify([]))
-    }
+  
+  // Initialize page-specific functionality
+  const currentPage = getCurrentPage();
+  
+  switch(currentPage) {
+    case 'index':
+      initializeLandingPage();
+      break;
+    case 'login':
+      initializeLoginPage();
+      break;
+    case 'signup':
+      initializeSignupPage();
+      break;
+    case 'user_dashboard':
+      initializeUserDashboard();
+      break;
+    case 'admin_dashboard':
+      initializeAdminDashboard();
+      break;
+    case 'chat':
+      initializeChatPage();
+      break;
+    case 'profile':
+      initializeProfilePage();
+      break;
   }
+  
+  // Update navigation based on login status
+  updateNavigation();
+}
 
-  bindEvents() {
-    // Chat input enter key
-    const chatInput = document.getElementById("chat-input")
-    if (chatInput) {
-      chatInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
-          this.sendMessage()
-        }
-      })
-    }
+function getCurrentPage() {
+  const path = window.location.pathname;
+  const page = path.split('/').pop().split('.')[0];
+  return page === '' ? 'index' : page;
+}
 
-    // Payment form submission
-    const paymentForm = document.getElementById("payment-form")
-    if (paymentForm) {
-      paymentForm.addEventListener("submit", (e) => {
-        e.preventDefault()
-        this.processPayment()
-      })
-    }
+function updateNavigation() {
+  const nav = document.querySelector('.nav');
+  if (!nav) return;
+  
+  if (currentUser) {
+    nav.innerHTML = `
+      <a href="index.html">Home</a>
+      <a href="user_dashboard.html" class="${getCurrentPage() === 'user_dashboard' ? 'active' : ''}">Dashboard</a>
+      <a href="chat.html" class="${getCurrentPage() === 'chat' ? 'active' : ''}">Chat</a>
+      <a href="profile.html" class="${getCurrentPage() === 'profile' ? 'active' : ''}">Profile</a>
+      ${currentUser.role === 'admin' ? '<a href="admin_dashboard.html" class="' + (getCurrentPage() === 'admin_dashboard' ? 'active' : '') + '">Admin</a>' : ''}
+      <a href="#" onclick="logout()">Logout</a>
+    `;
+  } else {
+    nav.innerHTML = `
+      <a href="index.html" class="${getCurrentPage() === 'index' ? 'active' : ''}">Home</a>
+      <a href="login.html" class="${getCurrentPage() === 'login' ? 'active' : ''}">Login</a>
+      <a href="signup.html" class="${getCurrentPage() === 'signup' ? 'active' : ''}">Sign Up</a>
+    `;
   }
+}
 
-  loadProfile() {
-    const profile = JSON.parse(localStorage.getItem("civicProfile"))
-    if (profile) {
-      document.getElementById("profile-name").textContent = profile.name
-      document.getElementById("profile-id").textContent = profile.id
-      document.getElementById("profile-email").textContent = profile.email
-      document.getElementById("profile-address").textContent = profile.address
-      document.getElementById("profile-phone").textContent = profile.phone
-    }
-  }
-
-  loadDocuments() {
-    const documents = JSON.parse(localStorage.getItem("civicDocuments"))
-    const documentsList = document.getElementById("documents-list")
-
-    if (documents && documentsList) {
-      documentsList.innerHTML = ""
-      documents.forEach((doc) => {
-        const docElement = document.createElement("div")
-        docElement.className = "document-item"
-        docElement.innerHTML = `
-                    <span>${doc.name}</span>
-                    <div class="document-status status-${doc.status}">
-                        ${this.getStatusIcon(doc.status)} ${doc.statusText}
-                    </div>
-                `
-        documentsList.appendChild(docElement)
-      })
-    }
-  }
-
-  getStatusIcon(status) {
-    switch (status) {
-      case "valid":
-        return "✅"
-      case "warning":
-        return "⚠️"
-      case "expired":
-        return "❌"
-      default:
-        return "📄"
-    }
-  }
-
-  loadDashboard() {
-    const requests = JSON.parse(localStorage.getItem("civicRequests"))
-
-    // Load ongoing requests
-    const ongoingContainer = document.getElementById("ongoing-requests")
-    if (ongoingContainer && requests.ongoing) {
-      ongoingContainer.innerHTML = ""
-      if (requests.ongoing.length === 0) {
-        ongoingContainer.innerHTML = '<p style="color: #64748b; text-align: center;">No ongoing requests</p>'
+// Authentication functions
+function login(email, password) {
+  const user = dummyData.users.find(u => u.email === email);
+  
+  if (user) {
+    currentUser = user;
+    localStorage.setItem('civicBridgeUser', JSON.stringify(user));
+    showNotification('Login successful!', 'success');
+    
+    // Redirect based on role
+    setTimeout(() => {
+      if (user.role === 'admin') {
+        window.location.href = 'admin_dashboard.html';
       } else {
-        requests.ongoing.forEach((request) => {
-          const requestElement = document.createElement("div")
-          requestElement.className = "request-item"
-          requestElement.innerHTML = `
-                        <div class="request-title">${request.title}</div>
-                        <div class="request-status">${request.status}</div>
-                        <div class="request-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${request.progress}%"></div>
-                            </div>
-                        </div>
-                    `
-          ongoingContainer.appendChild(requestElement)
-        })
+        window.location.href = 'user_dashboard.html';
       }
-    }
-
-    // Load history
-    const historyContainer = document.getElementById("request-history")
-    if (historyContainer && requests.history) {
-      historyContainer.innerHTML = ""
-      requests.history.forEach((request) => {
-        const requestElement = document.createElement("div")
-        requestElement.className = "request-item"
-        requestElement.innerHTML = `
-                    <div class="request-title">${request.title}</div>
-                    <div class="request-status">${request.status} - ${request.date}</div>
-                    ${request.receipt ? `<div style="font-size: 0.8rem; color: #64748b;">Receipt: ${request.receipt}</div>` : ""}
-                `
-        historyContainer.appendChild(requestElement)
-      })
-    }
-  }
-
-  sendMessage() {
-    const input = document.getElementById("chat-input")
-    const message = input.value.trim()
-
-    if (!message) return
-
-    // Add user message
-    this.addMessage(message, "user")
-    input.value = ""
-
-    // Simulate AI response
-    setTimeout(() => {
-      this.generateAIResponse(message)
-    }, 1000)
-  }
-
-  addMessage(content, sender) {
-    const messagesContainer = document.getElementById("chat-messages")
-    const messageDiv = document.createElement("div")
-    messageDiv.className = `message ${sender}-message`
-
-    const messageContent = document.createElement("div")
-    messageContent.className = "message-content"
-    messageContent.innerHTML = content
-
-    messageDiv.appendChild(messageContent)
-    messagesContainer.appendChild(messageDiv)
-    messagesContainer.scrollTop = messagesContainer.scrollHeight
-
-    // Save to chat history
-    const chatHistory = JSON.parse(localStorage.getItem("civicChatHistory"))
-    chatHistory.push({ content, sender, timestamp: new Date().toISOString() })
-    localStorage.setItem("civicChatHistory", JSON.stringify(chatHistory))
-  }
-
-  generateAIResponse(userMessage) {
-    const lowerMessage = userMessage.toLowerCase()
-    let response = ""
-    let hasActions = false
-
-    if (lowerMessage.includes("license") || lowerMessage.includes("renew")) {
-      response = `I can help you with license renewal. Your driving license expires in 2026, but I can help you renew it early if needed.`
-      hasActions = true
-    } else if (lowerMessage.includes("passport")) {
-      response = `I see your passport is expiring soon (June 2024). Would you like me to help you renew it?`
-      hasActions = true
-    } else if (lowerMessage.includes("pay") || lowerMessage.includes("fine") || lowerMessage.includes("summons")) {
-      response = `I can help you pay any outstanding fines or summons. Let me check your account for any pending payments.`
-      hasActions = true
-    } else if (lowerMessage.includes("document") || lowerMessage.includes("status")) {
-      response = `Here's your document status overview. I can help you renew any expiring documents.`
-    } else {
-      response = `I understand you're asking about "${userMessage}". I can help you with license renewals, passport applications, paying fines, checking document status, and more government services. What would you like to do?`
-    }
-
-    // Add action buttons if relevant
-    if (hasActions) {
-      response += `<div class="action-buttons">
-                <button class="action-btn" onclick="app.openPaymentModal('License Renewal', 75)">Renew License ($75)</button>
-                <button class="action-btn" onclick="app.openPaymentModal('Passport Renewal', 130)">Renew Passport ($130)</button>
-                <button class="action-btn" onclick="app.openPaymentModal('Pay Summons', 150)">Pay Summons ($150)</button>
-            </div>`
-    }
-
-    this.addMessage(response, "ai")
-  }
-
-  openPaymentModal(service, amount) {
-    const modal = document.getElementById("payment-modal")
-    const title = document.getElementById("payment-title")
-
-    title.textContent = `${service} - $${amount}`
-    modal.classList.add("active")
-
-    // Store current payment info
-    this.currentPayment = { service, amount }
-  }
-
-  closePaymentModal() {
-    const modal = document.getElementById("payment-modal")
-    modal.classList.remove("active")
-
-    // Clear form
-    document.getElementById("payment-form").reset()
-  }
-
-  processPayment() {
-    if (!this.currentPayment) return
-
-    const receiptNumber = "#" + Math.random().toString(36).substr(2, 6).toUpperCase()
-
-    // Add to ongoing requests
-    const requests = JSON.parse(localStorage.getItem("civicRequests"))
-    requests.ongoing.push({
-      title: this.currentPayment.service,
-      status: "Processing Payment",
-      progress: 25,
-    })
-
-    // Simulate processing stages
-    setTimeout(() => {
-      // Update to verified
-      const updatedRequests = JSON.parse(localStorage.getItem("civicRequests"))
-      const ongoingRequest = updatedRequests.ongoing.find((r) => r.title === this.currentPayment.service)
-      if (ongoingRequest) {
-        ongoingRequest.status = "Payment Verified"
-        ongoingRequest.progress = 75
-        localStorage.setItem("civicRequests", JSON.stringify(updatedRequests))
-        this.loadDashboard()
-      }
-    }, 2000)
-
-    setTimeout(() => {
-      // Complete and move to history
-      const finalRequests = JSON.parse(localStorage.getItem("civicRequests"))
-      finalRequests.ongoing = finalRequests.ongoing.filter((r) => r.title !== this.currentPayment.service)
-      finalRequests.history.unshift({
-        title: this.currentPayment.service,
-        status: "Completed",
-        date: new Date().toISOString().split("T")[0],
-        receipt: receiptNumber,
-      })
-      localStorage.setItem("civicRequests", JSON.stringify(finalRequests))
-      this.loadDashboard()
-
-      // Add success message to chat
-      this.addMessage(
-        `Payment Successful! ${this.currentPayment.service} has been processed. Receipt: ${receiptNumber}`,
-        "ai",
-      )
-    }, 4000)
-
-    localStorage.setItem("civicRequests", JSON.stringify(requests))
-    this.loadDashboard()
-
-    // Show success message
-    this.addMessage(
-      `<div class="status-card">
-            <h4>Payment Processing</h4>
-            <p>${this.currentPayment.service} - $${this.currentPayment.amount}</p>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 25%"></div>
-            </div>
-        </div>`,
-      "ai",
-    )
-
-    this.closePaymentModal()
+    }, 1000);
+    
+    return true;
+  } else {
+    showNotification('Invalid email or password', 'error');
+    return false;
   }
 }
 
-// Navigation functions
-function showPage(pageId) {
-  // Hide all pages
-  const pages = document.querySelectorAll(".page")
-  pages.forEach((page) => page.classList.remove("active"))
+function signup(userData) {
+  const newUser = {
+    id: dummyData.users.length + 1,
+    ...userData,
+    role: 'citizen'
+  };
+  
+  dummyData.users.push(newUser);
+  currentUser = newUser;
+  localStorage.setItem('civicBridgeUser', JSON.stringify(newUser));
+  
+  showNotification('Account created successfully!', 'success');
+  
+  setTimeout(() => {
+    window.location.href = 'user_dashboard.html';
+  }, 1000);
+}
 
-  // Show selected page
-  const targetPage = document.getElementById(pageId + "-page")
-  if (targetPage) {
-    targetPage.classList.add("active")
-  }
+function logout() {
+  currentUser = null;
+  localStorage.removeItem('civicBridgeUser');
+  showNotification('Logged out successfully', 'success');
+  
+  setTimeout(() => {
+    window.location.href = 'index.html';
+  }, 1000);
+}
 
-  // Update navigation
-  const navLinks = document.querySelectorAll(".nav-link")
-  navLinks.forEach((link) => link.classList.remove("active"))
+// Page-specific initialization functions
+function initializeLandingPage() {
+  // Add any landing page specific functionality
+}
 
-  const activeLink = document.querySelector(`[onclick="showPage('${pageId}')"]`)
-  if (activeLink) {
-    activeLink.classList.add("active")
+function initializeLoginPage() {
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      login(email, password);
+    });
   }
 }
 
-// Initialize app when DOM is loaded
-let app
-document.addEventListener("DOMContentLoaded", () => {
-  app = new CivicApp()
-})
+function initializeSignupPage() {
+  const signupForm = document.getElementById('signupForm');
+  if (signupForm) {
+    signupForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(signupForm);
+      const userData = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        idNumber: formData.get('idNumber'),
+        phone: formData.get('phone'),
+        address: formData.get('address')
+      };
+      signup(userData);
+    });
+  }
+}
 
-// Global functions for HTML onclick handlers
+function initializeUserDashboard() {
+  if (!currentUser) {
+    window.location.href = 'login.html';
+    return;
+  }
+  
+  loadUserDocuments();
+  loadUserRequests();
+  loadNotifications();
+}
+
+function initializeAdminDashboard() {
+  if (!currentUser || currentUser.role !== 'admin') {
+    window.location.href = 'login.html';
+    return;
+  }
+  
+  loadPendingRequests();
+  loadAllRequests();
+  loadAnalytics();
+}
+
+function initializeChatPage() {
+  const chatInput = document.getElementById('chatInput');
+  const sendButton = document.getElementById('sendButton');
+  
+  if (chatInput && sendButton) {
+    sendButton.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+  }
+}
+
+function initializeProfilePage() {
+  if (!currentUser) {
+    window.location.href = 'login.html';
+    return;
+  }
+  
+  loadUserProfile();
+}
+
+// Data loading functions
+function loadUserDocuments() {
+  const documentsContainer = document.getElementById('documentsContainer');
+  if (!documentsContainer) return;
+  
+  const userDocuments = dummyData.documents.filter(doc => doc.userId === currentUser.id);
+  
+  documentsContainer.innerHTML = userDocuments.map(doc => createDocumentCard(doc)).join('');
+}
+
+function loadUserRequests() {
+  const requestsContainer = document.getElementById('requestsContainer');
+  if (!requestsContainer) return;
+  
+  const userRequests = dummyData.requests.filter(req => req.userId === currentUser.id);
+  
+  requestsContainer.innerHTML = userRequests.map(req => createRequestCard(req)).join('');
+}
+
+function loadNotifications() {
+  const notificationsContainer = document.getElementById('notificationsContainer');
+  if (!notificationsContainer) return;
+  
+  const userNotifications = dummyData.notifications.filter(notif => notif.userId === currentUser.id);
+  
+  notificationsContainer.innerHTML = userNotifications.map(notif => createNotificationCard(notif)).join('');
+}
+
+function loadPendingRequests() {
+  const pendingContainer = document.getElementById('pendingRequestsContainer');
+  if (!pendingContainer) return;
+  
+  const pendingRequests = dummyData.requests.filter(req => req.status === 'pending');
+  
+  pendingContainer.innerHTML = pendingRequests.map(req => createAdminRequestCard(req)).join('');
+}
+
+function loadAllRequests() {
+  const allRequestsContainer = document.getElementById('allRequestsContainer');
+  if (!allRequestsContainer) return;
+  
+  allRequestsContainer.innerHTML = dummyData.requests.map(req => createAdminRequestCard(req)).join('');
+}
+
+function loadAnalytics() {
+  const analyticsContainer = document.getElementById('analyticsContainer');
+  if (!analyticsContainer) return;
+  
+  const totalRequests = dummyData.requests.length;
+  const pendingRequests = dummyData.requests.filter(req => req.status === 'pending').length;
+  const approvedRequests = dummyData.requests.filter(req => req.status === 'approved').length;
+  const rejectedRequests = dummyData.requests.filter(req => req.status === 'rejected').length;
+  
+  analyticsContainer.innerHTML = `
+    <div class="card">
+      <h3>Request Statistics</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+        <div style="text-align: center; padding: 1rem; background: var(--neutral-bg); border-radius: 8px;">
+          <div style="font-size: 2rem; font-weight: bold; color: var(--primary-blue);">${totalRequests}</div>
+          <div>Total Requests</div>
+        </div>
+        <div style="text-align: center; padding: 1rem; background: var(--neutral-bg); border-radius: 8px;">
+          <div style="font-size: 2rem; font-weight: bold; color: var(--warning-yellow);">${pendingRequests}</div>
+          <div>Pending</div>
+        </div>
+        <div style="text-align: center; padding: 1rem; background: var(--neutral-bg); border-radius: 8px;">
+          <div style="font-size: 2rem; font-weight: bold; color: var(--success-green);">${approvedRequests}</div>
+          <div>Approved</div>
+        </div>
+        <div style="text-align: center; padding: 1rem; background: var(--neutral-bg); border-radius: 8px;">
+          <div style="font-size: 2rem; font-weight: bold; color: var(--error-red);">${rejectedRequests}</div>
+          <div>Rejected</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function loadUserProfile() {
+  if (!currentUser) return;
+  
+  document.getElementById('profileName').textContent = currentUser.name;
+  document.getElementById('profileEmail').textContent = currentUser.email;
+  document.getElementById('profileId').textContent = currentUser.idNumber;
+  document.getElementById('profilePhone').textContent = currentUser.phone;
+  document.getElementById('profileAddress').textContent = currentUser.address;
+}
+
+// Card creation functions
+function createDocumentCard(doc) {
+  const statusIcon = doc.status === 'valid' ? '✅' : doc.status === 'expiring' ? '⚠️' : '❌';
+  const statusClass = `status-${doc.status}`;
+  
+  return `
+    <div class="document-card">
+      <div class="document-icon ${doc.type}">${getDocumentIcon(doc.type)}</div>
+      <div class="document-info">
+        <div class="document-name">${doc.name}</div>
+        <div class="document-number">#${doc.number}</div>
+        <div class="document-expiry">Expires: ${formatDate(doc.expiryDate)}</div>
+      </div>
+      <div class="status-badge ${statusClass}">
+        ${statusIcon} ${doc.status.toUpperCase()}
+      </div>
+    </div>
+  `;
+}
+
+function createRequestCard(req) {
+  const statusClass = `status-${req.status}`;
+  const statusIcon = req.status === 'approved' ? '✅' : req.status === 'rejected' ? '❌' : '⏳';
+  
+  return `
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h4>${req.title}</h4>
+          <p style="color: var(--text-gray); margin: 0.5rem 0;">${req.description}</p>
+          <small style="color: var(--text-gray);">Submitted: ${formatDate(req.submittedDate)}</small>
+        </div>
+        <div class="status-badge ${statusClass}">
+          ${statusIcon} ${req.status.toUpperCase()}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function createNotificationCard(notif) {
+  const icon = notif.type === 'success' ? '✅' : notif.type === 'warning' ? '⚠️' : '❌';
+  
+  return `
+    <div class="card" style="border-left: 4px solid ${notif.type === 'success' ? 'var(--success-green)' : notif.type === 'warning' ? 'var(--warning-yellow)' : 'var(--error-red)'};">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="font-size: 1.5rem;">${icon}</div>
+        <div>
+          <h4>${notif.title}</h4>
+          <p style="color: var(--text-gray); margin: 0.5rem 0;">${notif.message}</p>
+          <small style="color: var(--text-gray);">${formatDate(notif.date)}</small>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function createAdminRequestCard(req) {
+  const user = dummyData.users.find(u => u.id === req.userId);
+  const statusClass = `status-${req.status}`;
+  const statusIcon = req.status === 'approved' ? '✅' : req.status === 'rejected' ? '❌' : '⏳';
+  
+  return `
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h4>${req.title}</h4>
+          <p style="color: var(--text-gray); margin: 0.5rem 0;">${req.description}</p>
+          <p style="color: var(--text-gray); font-size: 0.9rem;">Requested by: ${user ? user.name : 'Unknown User'}</p>
+          <small style="color: var(--text-gray);">Submitted: ${formatDate(req.submittedDate)}</small>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <div class="status-badge ${statusClass}">
+            ${statusIcon} ${req.status.toUpperCase()}
+          </div>
+          ${req.status === 'pending' ? `
+            <button class="btn btn-success btn-sm" onclick="approveRequest(${req.id})">Approve</button>
+            <button class="btn btn-danger btn-sm" onclick="rejectRequest(${req.id})">Reject</button>
+          ` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Utility functions
+function getDocumentIcon(type) {
+  const icons = {
+    'license': '🚗',
+    'passport': '📘',
+    'id': '🆔',
+    'roadtax': '🛣️',
+    'vehicle': '🚙',
+    'insurance': '🛡️'
+  };
+  return icons[type] || '📄';
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-MY', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+function showNotification(message, type) {
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  notification.textContent = message;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.classList.add('show');
+  }, 100);
+  
+  setTimeout(() => {
+    notification.classList.remove('show');
+    setTimeout(() => {
+      document.body.removeChild(notification);
+    }, 300);
+  }, 3000);
+}
+
+// Request management functions
+function approveRequest(requestId) {
+  const request = dummyData.requests.find(req => req.id === requestId);
+  if (request) {
+    request.status = 'approved';
+    request.approvedDate = new Date().toISOString().split('T')[0];
+    
+    // Add notification
+    dummyData.notifications.push({
+      id: dummyData.notifications.length + 1,
+      userId: request.userId,
+      title: 'Request Approved',
+      message: `Your ${request.title} has been approved.`,
+      type: 'success',
+      date: new Date().toISOString().split('T')[0],
+      read: false
+    });
+    
+    showNotification('Request approved successfully', 'success');
+    loadPendingRequests();
+    loadAllRequests();
+  }
+}
+
+function rejectRequest(requestId) {
+  const reason = prompt('Please provide a reason for rejection:');
+  if (reason) {
+    const request = dummyData.requests.find(req => req.id === requestId);
+    if (request) {
+      request.status = 'rejected';
+      request.rejectedDate = new Date().toISOString().split('T')[0];
+      request.rejectionReason = reason;
+      
+      // Add notification
+      dummyData.notifications.push({
+        id: dummyData.notifications.length + 1,
+        userId: request.userId,
+        title: 'Request Rejected',
+        message: `Your ${request.title} has been rejected. Reason: ${reason}`,
+        type: 'error',
+        date: new Date().toISOString().split('T')[0],
+        read: false
+      });
+      
+      showNotification('Request rejected', 'success');
+      loadPendingRequests();
+      loadAllRequests();
+    }
+  }
+}
+
+// Chat functionality
 function sendMessage() {
-  app.sendMessage()
+  const chatInput = document.getElementById('chatInput');
+  const chatMessages = document.getElementById('chatMessages');
+  
+  if (!chatInput || !chatMessages) return;
+  
+  const message = chatInput.value.trim();
+  if (!message) return;
+  
+  // Add user message
+  addMessage(message, 'user');
+  chatInput.value = '';
+  
+  // Simulate AI response
+  setTimeout(() => {
+    const response = generateAIResponse(message);
+    addMessage(response, 'ai');
+  }, 1000);
 }
 
-function closePaymentModal() {
-  app.closePaymentModal()
+function addMessage(text, sender) {
+  const chatMessages = document.getElementById('chatMessages');
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${sender}-message`;
+  
+  const contentDiv = document.createElement('div');
+  contentDiv.className = 'message-content';
+  contentDiv.textContent = text;
+  
+  messageDiv.appendChild(contentDiv);
+  chatMessages.appendChild(messageDiv);
+  
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+
+function generateAIResponse(userMessage) {
+  const message = userMessage.toLowerCase();
+  
+  if (message.includes('license') || message.includes('renew')) {
+    return "I can help you with license renewal. You can submit a renewal request through your dashboard. The process usually takes 3-5 business days.";
+  } else if (message.includes('passport')) {
+    return "For passport renewal, please visit the Immigration Department or submit an online application. You'll need your current passport and recent photos.";
+  } else if (message.includes('status') || message.includes('check')) {
+    return "You can check the status of your requests in your dashboard. All pending, approved, and rejected requests are displayed there.";
+  } else if (message.includes('help')) {
+    return "I can help you with government services like license renewal, passport applications, tax payments, and more. What specific service do you need help with?";
+  } else {
+    return "Thank you for your message. I'm here to help you with government services. Please let me know what you need assistance with.";
+  }
+}
+
+// Modal functions
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.add('active');
+  }
+}
+
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.remove('active');
+  }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal')) {
+    e.target.classList.remove('active');
+  }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const activeModal = document.querySelector('.modal.active');
+    if (activeModal) {
+      activeModal.classList.remove('active');
+    }
+  }
+});
