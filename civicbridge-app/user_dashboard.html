@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CivicBridge</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">CivicBridge</a>
+                <nav class="nav">
+                    <!-- Navigation will be populated by JavaScript -->
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            <div class="dashboard">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1.5rem;">Dashboard</h3>
+                    <ul class="sidebar-nav">
+                        <li><a href="#overview" class="active">📊 Overview</a></li>
+                        <li><a href="#documents">📄 My Documents</a></li>
+                        <li><a href="#requests">📝 My Requests</a></li>
+                        <li><a href="#notifications">🔔 Notifications</a></li>
+                        <li><a href="chat.html">💬 Chat Support</a></li>
+                        <li><a href="profile.html">👤 Profile</a></li>
+                    </ul>
+                </aside>
+
+                <!-- Main Content Area -->
+                <div class="main-content">
+                    <!-- Overview Section -->
+                    <div id="overview">
+                        <h2 style="color: var(--primary-blue); margin-bottom: 2rem;">Welcome back, <span id="userName">User</span>!</h2>
+                        
+                        <!-- Quick Stats -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                            <div class="card" style="text-align: center;">
+                                <div style="font-size: 2rem; font-weight: bold; color: var(--primary-blue);">6</div>
+                                <div>Documents</div>
+                            </div>
+                            <div class="card" style="text-align: center;">
+                                <div style="font-size: 2rem; font-weight: bold; color: var(--warning-yellow);">1</div>
+                                <div>Pending Requests</div>
+                            </div>
+                            <div class="card" style="text-align: center;">
+                                <div style="font-size: 2rem; font-weight: bold; color: var(--success-green);">2</div>
+                                <div>Approved</div>
+                            </div>
+                            <div class="card" style="text-align: center;">
+                                <div style="font-size: 2rem; font-weight: bold; color: var(--error-red);">2</div>
+                                <div>Notifications</div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="card">
+                            <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Quick Actions</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                <button class="btn btn-primary" onclick="openModal('licenseModal')">🚗 Renew License</button>
+                                <button class="btn btn-primary" onclick="openModal('passportModal')">📘 Renew Passport</button>
+                                <button class="btn btn-primary" onclick="openModal('taxModal')">💳 Pay Tax</button>
+                                <button class="btn btn-primary" onclick="openModal('complaintModal')">📝 Submit Complaint</button>
+                                <button class="btn btn-primary" onclick="openModal('appointmentModal')">📅 Book Appointment</button>
+                                <button class="btn btn-primary" onclick="window.location.href='chat.html'">💬 Chat Support</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents Section -->
+                    <div id="documents" style="display: none;">
+                        <h2 style="color: var(--primary-blue); margin-bottom: 2rem;">My Documents</h2>
+                        <div id="documentsContainer">
+                            <!-- Documents will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Requests Section -->
+                    <div id="requests" style="display: none;">
+                        <h2 style="color: var(--primary-blue); margin-bottom: 2rem;">My Requests</h2>
+                        <div id="requestsContainer">
+                            <!-- Requests will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Notifications Section -->
+                    <div id="notifications" style="display: none;">
+                        <h2 style="color: var(--primary-blue); margin-bottom: 2rem;">Notifications</h2>
+                        <div id="notificationsContainer">
+                            <!-- Notifications will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <!-- License Renewal Modal -->
+    <div id="licenseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Driver's License Renewal</h3>
+                <button class="modal-close" onclick="closeModal('licenseModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label class="form-label">Current License Number</label>
+                        <input type="text" class="form-input" value="DL123456789" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Renewal Type</label>
+                        <select class="form-input">
+                            <option>Standard Renewal (5 years)</option>
+                            <option>Express Renewal (1 year)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Upload Documents</label>
+                        <input type="file" class="form-input" accept=".pdf,.jpg,.png">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Submit Renewal Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Passport Renewal Modal -->
+    <div id="passportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Passport Renewal</h3>
+                <button class="modal-close" onclick="closeModal('passportModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label class="form-label">Current Passport Number</label>
+                        <input type="text" class="form-input" value="PP987654321" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Passport Type</label>
+                        <select class="form-input">
+                            <option>Standard (32 pages)</option>
+                            <option>Jumbo (48 pages)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Upload Recent Photo</label>
+                        <input type="file" class="form-input" accept=".jpg,.png">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Submit Renewal Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tax Payment Modal -->
+    <div id="taxModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Tax Payment</h3>
+                <button class="modal-close" onclick="closeModal('taxModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label class="form-label">Tax Type</label>
+                        <select class="form-input">
+                            <option>Road Tax - RM50.00</option>
+                            <option>Property Tax - RM200.00</option>
+                            <option>Business License - RM100.00</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Payment Method</label>
+                        <select class="form-input">
+                            <option>Credit Card</option>
+                            <option>Online Banking</option>
+                            <option>E-Wallet</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Proceed to Payment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complaint Modal -->
+    <div id="complaintModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Submit Complaint</h3>
+                <button class="modal-close" onclick="closeModal('complaintModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label class="form-label">Complaint Category</label>
+                        <select class="form-input">
+                            <option>Road Maintenance</option>
+                            <option>Public Safety</option>
+                            <option>Environmental Issues</option>
+                            <option>Service Quality</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Subject</label>
+                        <input type="text" class="form-input" placeholder="Brief description of the issue">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-input" rows="4" placeholder="Detailed description of your complaint"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Upload Evidence (Optional)</label>
+                        <input type="file" class="form-input" accept=".pdf,.jpg,.png">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Submit Complaint</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointment Modal -->
+    <div id="appointmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Book Appointment</h3>
+                <button class="modal-close" onclick="closeModal('appointmentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        <select class="form-input">
+                            <option>JPJ (Road Transport Department)</option>
+                            <option>Immigration Department</option>
+                            <option>Local Council</option>
+                            <option>Tax Office</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Service Type</label>
+                        <select class="form-input">
+                            <option>License Renewal</option>
+                            <option>Document Collection</option>
+                            <option>Consultation</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Preferred Date</label>
+                        <input type="date" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Preferred Time</label>
+                        <select class="form-input">
+                            <option>9:00 AM</option>
+                            <option>10:00 AM</option>
+                            <option>11:00 AM</option>
+                            <option>2:00 PM</option>
+                            <option>3:00 PM</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Book Appointment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
