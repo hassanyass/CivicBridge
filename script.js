@@ -120,6 +120,26 @@ const dummyData = {
       status: "expired",
       expiryDate: "2025-08-30",
       issueDate: "2024-08-30"
+    },
+    {
+      id: 7,
+      userId: 1,
+      name: "Business Permit",
+      type: "business",
+      number: "BP789456123",
+      status: "valid",
+      expiryDate: "2026-06-15",
+      issueDate: "2021-06-15"
+    },
+    {
+      id: 8,
+      userId: 1,
+      name: "Professional License",
+      type: "professional",
+      number: "PL456123789",
+      status: "expiring",
+      expiryDate: "2025-12-31",
+      issueDate: "2020-12-31"
     }
   ],
   
@@ -136,7 +156,7 @@ const dummyData = {
     },
     {
       id: 2,
-      userId: 2,
+      userId: 1,
       type: "passport_renewal",
       title: "Passport Renewal",
       description: "Request for passport renewal",
@@ -147,7 +167,7 @@ const dummyData = {
     },
     {
       id: 3,
-      userId: 3,
+      userId: 1,
       type: "id_replacement",
       title: "National ID Replacement",
       description: "Request for lost ID replacement",
@@ -156,6 +176,27 @@ const dummyData = {
       rejectedDate: "2025-09-12",
       rejectionReason: "Incomplete documentation",
       priority: "high"
+    },
+    {
+      id: 4,
+      userId: 1,
+      type: "business_license",
+      title: "Business License Application",
+      description: "Application for new business license",
+      status: "pending",
+      submittedDate: "2025-09-20",
+      priority: "high"
+    },
+    {
+      id: 5,
+      userId: 1,
+      type: "tax_payment",
+      title: "Road Tax Payment",
+      description: "Payment for annual road tax",
+      status: "completed",
+      submittedDate: "2025-09-01",
+      completedDate: "2025-09-01",
+      priority: "medium"
     }
   ],
   
@@ -176,6 +217,33 @@ const dummyData = {
       message: "Your passport will expire on November 20, 2025. Please renew it soon to avoid any inconvenience.",
       type: "warning",
       date: "2025-09-15",
+      read: false
+    },
+    {
+      id: 3,
+      userId: 1,
+      title: "ID Card Ready for Pickup",
+      message: "Your new National ID card is ready for collection at the nearest registration office.",
+      type: "success",
+      date: "2025-09-22",
+      read: false
+    },
+    {
+      id: 4,
+      userId: 1,
+      title: "Payment Confirmed",
+      message: "Your road tax payment has been processed successfully. Receipt has been sent to your email.",
+      type: "success",
+      date: "2025-09-01",
+      read: true
+    },
+    {
+      id: 5,
+      userId: 1,
+      title: "Document Expiry Reminder",
+      message: "Your Professional License will expire on December 31, 2025. Consider renewing it soon.",
+      type: "warning",
+      date: "2025-09-20",
       read: false
     }
   ]
@@ -349,9 +417,19 @@ function initializeUserDashboard() {
     return;
   }
   
+  // Set up sidebar navigation
+  setupSidebarNavigation();
+  
+  // Load initial content
   loadUserDocuments();
   loadUserRequests();
   loadNotifications();
+  
+  // Set user name
+  const userNameElement = document.getElementById('userName');
+  if (userNameElement) {
+    userNameElement.textContent = currentUser.name;
+  }
 }
 
 function initializeAdminDashboard() {
@@ -388,45 +466,86 @@ function initializeProfilePage() {
   loadUserProfile();
 }
 
+// Sidebar navigation setup
+function setupSidebarNavigation() {
+  const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
+  
+  sidebarLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // Remove active class from all links
+      sidebarLinks.forEach(l => l.classList.remove('active'));
+      
+      // Add active class to clicked link
+      this.classList.add('active');
+      
+      // Get section ID from href
+      const sectionId = this.getAttribute('href').substring(1);
+      
+      // Switch to the section
+      switchSection(sectionId);
+    });
+  });
+}
+
 // Data loading functions
 function loadUserDocuments() {
-    const user = JSON.parse(localStorage.getItem("currentUser"));
-    if (!user) return;
+  if (!currentUser) return;
 
     const container = document.getElementById("documents-list");
     if (!container) return;
 
     container.innerHTML = "";
 
-    // فلترة المستندات الخاصة بالـ user
-    const userDocs = dummyData.documents.filter(doc => doc.ownerId === user.id);
+  // Filter documents for current user
+  const userDocs = dummyData.documents.filter(doc => doc.userId === currentUser.id);
 
     if (userDocs.length === 0) {
-        container.innerHTML = "<p>No saved documents found.</p>";
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📄</div>
+        <p>No saved documents found.</p>
+        <small>Your documents will appear here once you upload them.</small>
+      </div>
+    `;
         return;
     }
 
-    // عرض المستندات
+  // Display documents using the existing createDocumentCard function
     userDocs.forEach(doc => {
-        const div = document.createElement("div");
-        div.classList.add("document-item");
-        div.innerHTML = `
-            <div class="doc-name">📄 ${doc.name}</div>
-            <div class="doc-status"><span class="status-badge">${doc.status}</span></div>
-        `;
-        container.appendChild(div);
+    const docCard = document.createElement('div');
+    docCard.innerHTML = createDocumentCard(doc);
+    container.appendChild(docCard);
     });
 }
 
 function switchSection(sectionId) {
+  // Hide all sections
     document.querySelectorAll(".main-content > div").forEach(div => {
         div.style.display = "none";
     });
-    document.getElementById(sectionId).style.display = "block";
-
-    // تحميل المستندات عند فتح "My Documents"
-    if (sectionId === "documents") {
+  
+  // Show the selected section
+  const targetSection = document.getElementById(sectionId);
+  if (targetSection) {
+    targetSection.style.display = "block";
+    
+    // Load content based on section
+    switch(sectionId) {
+      case "documents":
         loadUserDocuments();
+        break;
+      case "requests":
+        loadUserRequests();
+        break;
+      case "notifications":
+        loadNotifications();
+        break;
+      case "overview":
+        // Overview is already loaded, no need to reload
+        break;
+    }
     }
 }
 
@@ -437,6 +556,17 @@ function loadUserRequests() {
   
   const userRequests = dummyData.requests.filter(req => req.userId === currentUser.id);
   
+  if (userRequests.length === 0) {
+    requestsContainer.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📝</div>
+        <p>No requests found.</p>
+        <small>Your service requests will appear here once you submit them.</small>
+      </div>
+    `;
+    return;
+  }
+  
   requestsContainer.innerHTML = userRequests.map(req => createRequestCard(req)).join('');
 }
 
@@ -445,6 +575,17 @@ function loadNotifications() {
   if (!notificationsContainer) return;
   
   const userNotifications = dummyData.notifications.filter(notif => notif.userId === currentUser.id);
+  
+  if (userNotifications.length === 0) {
+    notificationsContainer.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🔔</div>
+        <p>No notifications found.</p>
+        <small>You'll receive notifications about your requests and documents here.</small>
+      </div>
+    `;
+    return;
+  }
   
   notificationsContainer.innerHTML = userNotifications.map(notif => createNotificationCard(notif)).join('');
 }
@@ -531,7 +672,23 @@ function createDocumentCard(doc) {
 
 function createRequestCard(req) {
   const statusClass = `status-${req.status}`;
-  const statusIcon = req.status === 'approved' ? '✅' : req.status === 'rejected' ? '❌' : '⏳';
+  let statusIcon = '⏳';
+  
+  switch(req.status) {
+    case 'approved':
+      statusIcon = '✅';
+      break;
+    case 'rejected':
+      statusIcon = '❌';
+      break;
+    case 'completed':
+      statusIcon = '✅';
+      break;
+    case 'pending':
+    default:
+      statusIcon = '⏳';
+      break;
+  }
   
   return `
     <div class="card">
@@ -540,6 +697,8 @@ function createRequestCard(req) {
           <h4>${req.title}</h4>
           <p style="color: var(--text-gray); margin: 0.5rem 0;">${req.description}</p>
           <small style="color: var(--text-gray);">Submitted: ${formatDate(req.submittedDate)}</small>
+          ${req.completedDate ? `<br><small style="color: var(--success-green);">Completed: ${formatDate(req.completedDate)}</small>` : ''}
+          ${req.rejectionReason ? `<br><small style="color: var(--error-red);">Reason: ${req.rejectionReason}</small>` : ''}
         </div>
         <div class="status-badge ${statusClass}">
           ${statusIcon} ${req.status.toUpperCase()}
@@ -602,7 +761,9 @@ function getDocumentIcon(type) {
     'id': '🆔',
     'roadtax': '🛣️',
     'vehicle': '🚙',
-    'insurance': '🛡️'
+    'insurance': '🛡️',
+    'business': '🏢',
+    'professional': '👨‍💼'
   };
   return icons[type] || '📄';
 }
@@ -687,6 +848,9 @@ function rejectRequest(requestId) {
 }
 
 // Chat functionality
+let currentChatFlow = null;
+let licenseRenewalData = {};
+
 function sendMessage() {
   const chatInput = document.getElementById('chatInput');
   const chatMessages = document.getElementById('chatMessages');
@@ -700,25 +864,25 @@ function sendMessage() {
   addMessage(message, 'user');
   chatInput.value = '';
   
-  // Simulate AI response
+  // Handle chat flow
   setTimeout(() => {
-    const response = generateAIResponse(message);
-    addMessage(response.reply, 'ai');
-
-    if (response.requiresRenewalPopup) {
-      openModal('licenseModal');
-    }
+    handleChatFlow(message);
   }, 1000);
 }
 
-function addMessage(text, sender) {
+function addMessage(text, sender, options = {}) {
   const chatMessages = document.getElementById('chatMessages');
   const messageDiv = document.createElement('div');
   messageDiv.className = `message ${sender}-message`;
   
   const contentDiv = document.createElement('div');
   contentDiv.className = 'message-content';
+  
+  if (options.html) {
+    contentDiv.innerHTML = text;
+  } else {
   contentDiv.textContent = text;
+  }
   
   messageDiv.appendChild(contentDiv);
   chatMessages.appendChild(messageDiv);
@@ -726,25 +890,227 @@ function addMessage(text, sender) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function generateAIResponse(userMessage) {
+function handleChatFlow(userMessage) {
   const message = userMessage.toLowerCase();
-  let response = { reply: "", requiresRenewalPopup: false };
-
-  if (message.includes("license") || message.includes("renew")) {
-  response.reply = "I can help you with license renewal. You can submit a renewal request through your dashboard. The process usually takes 3-5 business days.";
-  response.requiresRenewalPopup = true; // 👈 هنا بتحدد إن محتاج popup
-  }
- else if (message.includes("passport")) {
-    response.reply = "For passport renewal, please visit the Immigration Department or submit an online application. You'll need your current passport and recent photos.";
+  
+  // Check if user wants to start license renewal
+  if ((message.includes("license") || message.includes("renew")) && !currentChatFlow) {
+    startLicenseRenewalFlow();
+  } else if (currentChatFlow === 'license_renewal') {
+    handleLicenseRenewalStep(userMessage);
+  } else if (message.includes("passport")) {
+    addMessage("For passport renewal, please visit the Immigration Department or submit an online application. You'll need your current passport and recent photos.", 'ai');
   } else if (message.includes("status") || message.includes("check")) {
-    response.reply = "You can check the status of your requests in your dashboard. All pending, approved, and rejected requests are displayed there.";
+    addMessage("You can check the status of your requests in your dashboard. All pending, approved, and rejected requests are displayed there.", 'ai');
   } else if (message.includes("help")) {
-    response.reply = "I can help you with government services like license renewal, passport applications, tax payments, and more. What specific service do you need help with?";
+    addMessage("I can help you with government services like license renewal, passport applications, tax payments, and more. What specific service do you need help with?", 'ai');
   } else {
-    response.reply = "Thank you for your message. I'm here to help you with government services. Please let me know what you need assistance with.";
+    addMessage("Thank you for your message. I'm here to help you with government services. Please let me know what you need assistance with.", 'ai');
   }
+}
 
-  return response;
+function startLicenseRenewalFlow() {
+  currentChatFlow = 'license_renewal';
+  licenseRenewalData = {};
+  
+  const message = `
+    <div class="step-indicator">
+      <div class="step-number">1</div>
+      <div class="step-text">License Type Selection</div>
+    </div>
+    <span class="status-icon">🚗</span>Sure, I can help you renew your driving license! 
+    <br><br>Can you confirm the license type you want to renew?
+    <div class="quick-reply-container">
+      <button class="quick-reply-btn" onclick="selectLicenseType('driving')">🚗 Driving License</button>
+      <button class="quick-reply-btn" onclick="selectLicenseType('business')">🏢 Business License</button>
+      <button class="quick-reply-btn" onclick="selectLicenseType('other')">📄 Other</button>
+    </div>
+  `;
+  
+  addMessage(message, 'ai', { html: true });
+}
+
+function selectLicenseType(type) {
+  licenseRenewalData.type = type;
+  
+  // Add user selection as message
+  const typeText = type === 'driving' ? 'Driving License' : type === 'business' ? 'Business License' : 'Other';
+  addMessage(`I want to renew my ${typeText}`, 'user');
+  
+  // Show current license info
+  setTimeout(() => {
+    showCurrentLicenseInfo();
+  }, 1000);
+}
+
+function showCurrentLicenseInfo() {
+  if (!currentUser) return;
+  
+  // Get user's current license from dummy data
+  const userLicense = dummyData.documents.find(doc => 
+    doc.userId === currentUser.id && 
+    (doc.type === 'license' || (licenseRenewalData.type === 'business' && doc.type === 'business'))
+  );
+  
+  const message = `
+    <div class="step-indicator">
+      <div class="step-number">2</div>
+      <div class="step-text">Current License Information</div>
+    </div>
+    <span class="status-icon">📋</span>Here are your current license details:
+    <div class="license-info-card">
+      <h4>${userLicense ? userLicense.name : 'License Information'}</h4>
+      <div class="license-details">
+        <div class="license-detail"><strong>License Number:</strong> ${userLicense ? userLicense.number : 'N/A'}</div>
+        <div class="license-detail"><strong>Status:</strong> ${userLicense ? userLicense.status : 'N/A'}</div>
+        <div class="license-detail"><strong>Expiry Date:</strong> ${userLicense ? formatDate(userLicense.expiryDate) : 'N/A'}</div>
+        <div class="license-detail"><strong>Issue Date:</strong> ${userLicense ? formatDate(userLicense.issueDate) : 'N/A'}</div>
+      </div>
+    </div>
+    <br>How long would you like to renew your license for?
+    <div class="quick-reply-container">
+      <button class="quick-reply-btn" onclick="selectRenewalPeriod('1')">1 Year</button>
+      <button class="quick-reply-btn" onclick="selectRenewalPeriod('3')">3 Years</button>
+      <button class="quick-reply-btn" onclick="selectRenewalPeriod('5')">5 Years</button>
+    </div>
+  `;
+  
+  addMessage(message, 'ai', { html: true });
+}
+
+function selectRenewalPeriod(years) {
+  licenseRenewalData.renewalPeriod = years;
+  
+  // Add user selection as message
+  addMessage(`I want to renew for ${years} year${years > 1 ? 's' : ''}`, 'user');
+  
+  // Show payment step
+  setTimeout(() => {
+    showPaymentStep();
+  }, 1000);
+}
+
+function showPaymentStep() {
+  const renewalFee = licenseRenewalData.renewalPeriod === '1' ? 'RM 20' : 
+                     licenseRenewalData.renewalPeriod === '3' ? 'RM 50' : 'RM 80';
+  
+  const message = `
+    <div class="step-indicator">
+      <div class="step-number">3</div>
+      <div class="step-text">Payment Processing</div>
+    </div>
+    <span class="status-icon">💳</span>Perfect! Your ${licenseRenewalData.renewalPeriod}-year renewal will cost <strong>${renewalFee}</strong>.
+    <br><br>Let me process your payment now...
+    <div class="quick-reply-container">
+      <button class="quick-reply-btn" onclick="processPayment()">💳 Process Payment</button>
+    </div>
+  `;
+  
+  addMessage(message, 'ai', { html: true });
+}
+
+function processPayment() {
+  addMessage('Processing payment...', 'user');
+  
+  // Show progress indicator
+  const progressMessage = `
+    <div class="progress-indicator">
+      <div class="progress-dots">
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+      </div>
+      <span>Processing your payment...</span>
+    </div>
+  `;
+  
+  addMessage(progressMessage, 'ai', { html: true });
+  
+  // Simulate payment processing
+  setTimeout(() => {
+    showPaymentSuccess();
+  }, 3000);
+}
+
+function showPaymentSuccess() {
+  const message = `
+    <div class="payment-simulation">
+      <div class="icon">✅</div>
+      <h4>Payment Successful!</h4>
+      <p>Your payment has been processed successfully.</p>
+    </div>
+    <br>Now submitting your renewal request...
+  `;
+  
+  addMessage(message, 'ai', { html: true });
+  
+  // Show final processing
+  setTimeout(() => {
+    completeLicenseRenewal();
+  }, 2000);
+}
+
+function completeLicenseRenewal() {
+  // Create new request in dummy data
+  const newRequest = {
+    id: dummyData.requests.length + 1,
+    userId: currentUser.id,
+    type: "license_renewal",
+    title: `${licenseRenewalData.type === 'driving' ? 'Driving' : 'Business'} License Renewal (${licenseRenewalData.renewalPeriod} years)`,
+    description: `Request for ${licenseRenewalData.type} license renewal for ${licenseRenewalData.renewalPeriod} year${licenseRenewalData.renewalPeriod > 1 ? 's' : ''}`,
+    status: "pending",
+    submittedDate: new Date().toISOString().split('T')[0],
+    priority: "medium"
+  };
+  
+  dummyData.requests.push(newRequest);
+  
+  // Add notification
+  dummyData.notifications.push({
+    id: dummyData.notifications.length + 1,
+    userId: currentUser.id,
+    title: 'License Renewal Submitted',
+    message: `Your ${licenseRenewalData.type} license renewal request has been submitted successfully.`,
+    type: 'success',
+    date: new Date().toISOString().split('T')[0],
+    read: false
+  });
+  
+  const message = `
+    <div class="step-indicator">
+      <div class="step-number">4</div>
+      <div class="step-text">Request Submitted</div>
+    </div>
+    <span class="status-icon">✅</span><strong>Your ${licenseRenewalData.type === 'driving' ? 'Driving' : 'Business'} License renewal has been submitted successfully!</strong>
+    <br><br>📋 <strong>Request Details:</strong>
+    <br>• License Type: ${licenseRenewalData.type === 'driving' ? 'Driving License' : 'Business License'}
+    <br>• Renewal Period: ${licenseRenewalData.renewalPeriod} year${licenseRenewalData.renewalPeriod > 1 ? 's' : ''}
+    <br>• Status: Pending Approval
+    <br>• Estimated Processing: 3-5 business days
+    <br><br>You can track this request in your Dashboard under <strong>'My Requests'</strong>.
+    <br><br>Is there anything else I can help you with?
+    <div class="quick-reply-container">
+      <button class="quick-reply-btn" onclick="resetChatFlow()">🔄 New Request</button>
+      <button class="quick-reply-btn" onclick="checkStatus()">📊 Check Status</button>
+    </div>
+  `;
+  
+  addMessage(message, 'ai', { html: true });
+  
+  // Reset flow
+  currentChatFlow = null;
+  licenseRenewalData = {};
+}
+
+function resetChatFlow() {
+  currentChatFlow = null;
+  licenseRenewalData = {};
+  addMessage('How can I help you today?', 'ai');
+}
+
+function checkStatus() {
+  addMessage('Check my request status', 'user');
+  addMessage("You can check the status of your requests in your dashboard under 'My Requests'. All pending, approved, and rejected requests are displayed there.", 'ai');
 }
 
 

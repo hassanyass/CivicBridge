@@ -205,6 +205,11 @@ body {
   color: var(--white);
 }
 
+.status-completed {
+  background-color: var(--success-green);
+  color: var(--white);
+}
+
 /* Document Cards */
 .document-card {
   display: flex;
@@ -241,6 +246,8 @@ body {
 .document-icon.roadtax { background: linear-gradient(135deg, #F59E0B, #D97706); }
 .document-icon.vehicle { background: linear-gradient(135deg, #EF4444, #DC2626); }
 .document-icon.insurance { background: linear-gradient(135deg, #06B6D4, #0891B2); }
+.document-icon.business { background: linear-gradient(135deg, #7C3AED, #6D28D9); }
+.document-icon.professional { background: linear-gradient(135deg, #059669, #047857); }
 
 .document-info {
   flex: 1;
@@ -455,6 +462,161 @@ body {
   border: 1px solid var(--border-gray);
 }
 
+/* Quick Reply Buttons */
+.quick-reply-container {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.quick-reply-btn {
+  background: var(--white);
+  border: 2px solid var(--primary-blue);
+  color: var(--primary-blue);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.quick-reply-btn:hover {
+  background: var(--primary-blue);
+  color: var(--white);
+  transform: translateY(-1px);
+}
+
+.quick-reply-btn:active {
+  transform: translateY(0);
+}
+
+/* License Info Card */
+.license-info-card {
+  background: var(--white);
+  border: 2px solid var(--primary-blue);
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 1rem 0;
+  box-shadow: var(--shadow);
+}
+
+.license-info-card h4 {
+  color: var(--primary-blue);
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.license-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.license-detail {
+  font-size: 0.9rem;
+  color: var(--text-gray);
+}
+
+.license-detail strong {
+  color: var(--text-dark);
+}
+
+/* Progress Indicator */
+.progress-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--white);
+  border-radius: 8px;
+  border: 1px solid var(--border-gray);
+}
+
+.progress-dots {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-blue);
+  animation: pulse 1.5s infinite;
+}
+
+.progress-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.progress-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Status Icons */
+.status-icon {
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
+}
+
+/* Payment Simulation */
+.payment-simulation {
+  background: var(--white);
+  border: 2px solid var(--success-green);
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.payment-simulation .icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.payment-simulation h4 {
+  color: var(--success-green);
+  margin-bottom: 0.5rem;
+}
+
+/* Step Indicator */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: var(--neutral-bg);
+  border-radius: 8px;
+}
+
+.step-number {
+  background: var(--primary-blue);
+  color: var(--white);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.step-text {
+  color: var(--text-dark);
+  font-weight: 500;
+}
+
 .chat-input-container {
   display: flex;
   padding: 1rem;
@@ -482,6 +644,59 @@ body {
   grid-template-columns: 250px 1fr;
   gap: 2rem;
   min-height: calc(100vh - 80px);
+}
+
+/* Documents List */
+.documents-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.documents-card {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-gray);
+}
+
+.documents-card h3 {
+  color: var(--primary-blue);
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Section Headers */
+.main-content h2 {
+  color: var(--primary-blue);
+  margin-bottom: 2rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  color: var(--text-gray);
+  padding: 3rem 1rem;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-gray);
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state .icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
 }
 
 .sidebar {
@@ -627,6 +842,23 @@ body {
   .header-content {
     flex-direction: column;
     gap: 1rem;
+  }
+  
+  .quick-reply-container {
+    flex-direction: column;
+  }
+  
+  .quick-reply-btn {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .license-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .message-content {
+    max-width: 85%;
   }
 }
 
