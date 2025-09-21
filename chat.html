@@ -127,5 +127,34 @@
             sendMessage();
         }
     </script>
+
+    <div id="licenseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Driver's License Renewal</h3>
+                <button class="modal-close" onclick="closeModal('licenseModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="submitRenewalRequest(event)">
+                    <div class="form-group">
+                        <label class="form-label">Current License Number</label>
+                        <input type="text" class="form-input" value="DL123456789" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Renewal Type</label>
+                        <select class="form-input">
+                            <option>Standard Renewal (5 years)</option>
+                            <option>Express Renewal (1 year)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Upload Documents</label>
+                        <input type="file" class="form-input" accept=".pdf,.jpg,.png">
+                    </div>
+                   <button type="submit" class="btn btn-primary btn-full">Submit Renewal Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

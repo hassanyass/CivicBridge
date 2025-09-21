@@ -390,13 +390,46 @@ function initializeProfilePage() {
 
 // Data loading functions
 function loadUserDocuments() {
-  const documentsContainer = document.getElementById('documentsContainer');
-  if (!documentsContainer) return;
-  
-  const userDocuments = dummyData.documents.filter(doc => doc.userId === currentUser.id);
-  
-  documentsContainer.innerHTML = userDocuments.map(doc => createDocumentCard(doc)).join('');
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+    if (!user) return;
+
+    const container = document.getElementById("documents-list");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    // فلترة المستندات الخاصة بالـ user
+    const userDocs = dummyData.documents.filter(doc => doc.ownerId === user.id);
+
+    if (userDocs.length === 0) {
+        container.innerHTML = "<p>No saved documents found.</p>";
+        return;
+    }
+
+    // عرض المستندات
+    userDocs.forEach(doc => {
+        const div = document.createElement("div");
+        div.classList.add("document-item");
+        div.innerHTML = `
+            <div class="doc-name">📄 ${doc.name}</div>
+            <div class="doc-status"><span class="status-badge">${doc.status}</span></div>
+        `;
+        container.appendChild(div);
+    });
 }
+
+function switchSection(sectionId) {
+    document.querySelectorAll(".main-content > div").forEach(div => {
+        div.style.display = "none";
+    });
+    document.getElementById(sectionId).style.display = "block";
+
+    // تحميل المستندات عند فتح "My Documents"
+    if (sectionId === "documents") {
+        loadUserDocuments();
+    }
+}
+
 
 function loadUserRequests() {
   const requestsContainer = document.getElementById('requestsContainer');
@@ -670,7 +703,11 @@ function sendMessage() {
   // Simulate AI response
   setTimeout(() => {
     const response = generateAIResponse(message);
-    addMessage(response, 'ai');
+    addMessage(response.reply, 'ai');
+
+    if (response.requiresRenewalPopup) {
+      openModal('licenseModal');
+    }
   }, 1000);
 }
 
@@ -691,19 +728,25 @@ function addMessage(text, sender) {
 
 function generateAIResponse(userMessage) {
   const message = userMessage.toLowerCase();
-  
-  if (message.includes('license') || message.includes('renew')) {
-    return "I can help you with license renewal. You can submit a renewal request through your dashboard. The process usually takes 3-5 business days.";
-  } else if (message.includes('passport')) {
-    return "For passport renewal, please visit the Immigration Department or submit an online application. You'll need your current passport and recent photos.";
-  } else if (message.includes('status') || message.includes('check')) {
-    return "You can check the status of your requests in your dashboard. All pending, approved, and rejected requests are displayed there.";
-  } else if (message.includes('help')) {
-    return "I can help you with government services like license renewal, passport applications, tax payments, and more. What specific service do you need help with?";
-  } else {
-    return "Thank you for your message. I'm here to help you with government services. Please let me know what you need assistance with.";
+  let response = { reply: "", requiresRenewalPopup: false };
+
+  if (message.includes("license") || message.includes("renew")) {
+  response.reply = "I can help you with license renewal. You can submit a renewal request through your dashboard. The process usually takes 3-5 business days.";
+  response.requiresRenewalPopup = true; // 👈 هنا بتحدد إن محتاج popup
   }
+ else if (message.includes("passport")) {
+    response.reply = "For passport renewal, please visit the Immigration Department or submit an online application. You'll need your current passport and recent photos.";
+  } else if (message.includes("status") || message.includes("check")) {
+    response.reply = "You can check the status of your requests in your dashboard. All pending, approved, and rejected requests are displayed there.";
+  } else if (message.includes("help")) {
+    response.reply = "I can help you with government services like license renewal, passport applications, tax payments, and more. What specific service do you need help with?";
+  } else {
+    response.reply = "Thank you for your message. I'm here to help you with government services. Please let me know what you need assistance with.";
+  }
+
+  return response;
 }
+
 
 // Modal functions
 function openModal(modalId) {
@@ -736,3 +779,15 @@ document.addEventListener('keydown', function(e) {
     }
   }
 });
+
+function submitRenewalRequest(event) {
+    event.preventDefault(); // يمنع إعادة تحميل الصفحة
+    closeModal('licenseModal');
+
+    // Alert زي الـ old version
+    alert("✅ License renewal submitted successfully!\n\nYour request will be processed within 2-3 business days.");
+
+    // رسالة AI في الشات
+    addMessage("Your driver's license renewal request has been submitted and is being processed.", "ai");
+}
+
